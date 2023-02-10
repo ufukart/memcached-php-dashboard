@@ -141,11 +141,11 @@ class Simple_memchached_dashboard{
 							$value = $this->maybe_unserialize($value);
 							if (is_object($value)|| is_array($value)){
 								$value = is_object($value)? json_decode(json_encode($value), true): $value;
-								$value = '<pre class="alert alert-warning">'.print_r($this->array_map_deep( $value,array($this,'maybe_unserialize')),true).'</pre>';
+								$value = print_r($this->array_map_deep( $value,array($this,'maybe_unserialize')),true);
 							}
 							$list[$eName] = array(
 								'key'   => $eName,
-								'value' => $value,
+								'value' => substr($value, 0, 200),
 								'type'  => $type
 							);
 						}
@@ -276,10 +276,10 @@ class Simple_memchached_dashboard{
 
 	function print_memory_widget(){
 		$status  = $this->status;
-		$MBSize  = (real) $status["limit_maxbytes"]/(1024*1024) ;
-		$MBSizeU = number_format((real) $status["bytes"]/(1024*1024),4);
-		$MBRead  = number_format((real)$status["bytes_read"]/(1024*1024),4);
-		$MBWrite = number_format((real) $status["bytes_written"]/(1024*1024),4);
+		$MBSize  = (float)$status["limit_maxbytes"]/(1024*1024) ;
+		$MBSizeU = number_format((float)$status["bytes"]/(1024*1024),4);
+		$MBRead  = number_format((float)$status["bytes_read"]/(1024*1024),4);
+		$MBWrite = number_format((float)$status["bytes_written"]/(1024*1024),4);
 		?>
 		<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
 			<div class="panel panel-default">
@@ -388,7 +388,7 @@ class Simple_memchached_dashboard{
 							<?php foreach($this->list as $i): ?>
 								<tr>
 									<td class="one_t"><span class="key_scroll"><?= $i['key'] ?></span></td>
-									<td class="one_h"><?= $i['value'] ?></td>
+									<td class="one_h"><pre class="alert alert-warning"><?= htmlspecialchars($i['value']) ?></pre></td>
 									<td><?= $i['type'] ?></td>
 									<td><a class="btn btn-danger" onclick="deleteKey('<?= $i['key'] ?>')" href="#">X</a>
 								</tr>
@@ -425,30 +425,30 @@ class Simple_memchached_dashboard{
 			<?php
 				echo "<table class='table'>"; 
 				echo "<tr><td>Memcache Server version:</td><td> ".$status ["version"]."</td></tr>"; 
-				echo "<tr><td>Process id of this server process </td><td>".$status ["pid"]."</td></tr>"; 
-				echo "<tr><td>Server Uptime </td><td>".gmdate("H:i:s", $status["uptime"])."</td></tr>"; 
-				echo "<tr><td>Total number of items stored by this server ever since it started </td><td>".$status ["total_items"]."</td></tr>"; 
-				echo "<tr><td>Number of open connections </td><td>".$status ["curr_connections"]."</td></tr>"; 
-				echo "<tr><td>Total number of connections opened since the server started running </td><td>".$status ["total_connections"]."</td></tr>"; 
-				echo "<tr><td>Number of connection structures allocated by the server </td><td>".$status ["connection_structures"]."</td></tr>"; 
-				echo "<tr><td>Cumulative number of retrieval requests </td><td>".$status ["cmd_get"]."</td></tr>"; 
-				echo "<tr><td> Cumulative number of storage requests </td><td>".$status ["cmd_set"]."</td></tr>"; 
+				echo "<tr><td>Process id of this server process</td><td>".$status ["pid"]."</td></tr>";
+				echo "<tr><td>Server Uptime</td><td>".gmdate("H:i:s", $status["uptime"])."</td></tr>";
+				echo "<tr><td>Total number of items stored by this server ever since it started</td><td>".$status ["total_items"]."</td></tr>";
+				echo "<tr><td>Number of open connections</td><td>".$status ["curr_connections"]."</td></tr>";
+				echo "<tr><td>Total number of connections opened since the server started running</td><td>".$status ["total_connections"]."</td></tr>";
+				echo "<tr><td>Number of connection structures allocated by the server</td><td>".$status ["connection_structures"]."</td></tr>";
+				echo "<tr><td>Cumulative number of retrieval requests</td><td>".$status ["cmd_get"]."</td></tr>";
+				echo "<tr><td> Cumulative number of storage requests</td><td>".$status ["cmd_set"]."</td></tr>";
 
-				if ((real)$status ["cmd_get"] != 0)
-					$percCacheHit=((real)$status ["get_hits"]/ (real)$status ["cmd_get"] *100);
+				if ((float)$status ["cmd_get"] != 0)
+					$percCacheHit=((float)$status ["get_hits"]/ (float)$status ["cmd_get"] *100);
 				else
 					$percCacheHit=0;
 				$percCacheHit=round($percCacheHit,3); 
 				$percCacheMiss=100-$percCacheHit; 
 
-				echo "<tr><td>Number of keys that have been requested and found present </td><td>".$status ["get_hits"]." ($percCacheHit%)</td></tr>"; 
-				echo "<tr><td>Number of items that have been requested and not found </td><td>".$status ["get_misses"]."($percCacheMiss%)</td></tr>"; 
+				echo "<tr><td>Number of keys that have been requested and found present</td><td>".$status ["get_hits"]." ($percCacheHit%)</td></tr>";
+				echo "<tr><td>Number of items that have been requested and not found</td><td>".$status ["get_misses"]."($percCacheMiss%)</td></tr>";
 
-				$MBRead= (real)$status["bytes_read"]/(1024*1024); 
+				$MBRead= (float)$status["bytes_read"]/(1024*1024);
 				echo "<tr><td>Total number of bytes read by this server from network </td><td>".$MBRead." Mega Bytes</td></tr>"; 
-				$MBWrite=(real) $status["bytes_written"]/(1024*1024) ; 
+				$MBWrite=(float)$status["bytes_written"]/(1024*1024) ;
 				echo "<tr><td>Total number of bytes sent by this server to network </td><td>".$MBWrite." Mega Bytes</td></tr>";
-				$MBSize=(real) $status["limit_maxbytes"]/(1024*1024) ; 
+				$MBSize=(float)$status["limit_maxbytes"]/(1024*1024) ;
 				echo "<tr><td>Current number of bytes used.</td><td>".$status['bytes']."</td></tr>"; 
 				echo "<tr><td>Number of bytes this server is allowed to use for storage.</td><td>".$MBSize." Mega Bytes</td></tr>"; 
 				echo "<tr><td>Number of valid items removed from cache to free memory for new items.</td><td>".$status ["evictions"]."</td></tr>"; 
@@ -461,20 +461,21 @@ class Simple_memchached_dashboard{
 
 	function header(){
 		?><!DOCTYPE html>
-		<html lang="">
+		<html lang="en">
 		<head>
 			<meta charset="utf-8">
+			<title>Memcached stats</title>
 			<meta http-equiv="X-UA-Compatible" content="IE=edge">
 			<meta name="viewport" content="width=device-width, initial-scale=1">
-			<link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-			<link rel="stylesheet" href="http://cdn.oesmith.co.uk/morris-0.5.1.css">
-			<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css">
-			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.core.min.css">
-			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.default.min.css">
-			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.bootstrap.min.css">
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-			<style type="text/css">
-			pre {overflow: auto;width: 100%;}
+			<link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+			<link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.css">
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.core.min.css">
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.default.min.css">
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.bootstrap.min.css">
+			<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+			<style>
+			pre {overflow: auto;width: 100%;height: 6pc;}
 			.key_scroll{overflow: auto;width: 50%;word-wrap: break-word;margin: 0;float: left;}
 			.one_t{width: 30%;}
 			.one_h{width: 50%;}
@@ -525,13 +526,13 @@ class Simple_memchached_dashboard{
 
 	function footer(){
 		?>
-		<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-		<script src="http://cdn.oesmith.co.uk/morris-0.5.1.min.js"></script>
-		<script type="text/javascript" src="//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" src="//cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.js"></script>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.min.js"></script>
-		<script type="text/javascript">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+		<script src="https://cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script>
+		<script src="https://cdn.datatables.net/plug-ins/a5734b29083/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/alertify.js/0.3.11/alertify.min.js"></script>
+		<script>
 			jQuery(document).ready(function(){
 				$("#stored_keys").dataTable({
 					"bFilter":true,
